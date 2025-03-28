@@ -1,4 +1,8 @@
-#database_connection
+# Pandas ile verilerin çekilmesi
+
+# Aylık veya ürün bazlı satış özet verisinin hazırlanması
+# Eksik veri kontrolü ve temizliği
+# Özellik mühendisliği: Ay bilgisi, ürün fiyatı, müşteri segmentasyonu gibi özellikler üretme
 
 
 import pandas as pd
