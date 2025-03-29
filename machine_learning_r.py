@@ -15,11 +15,10 @@ import seaborn as sns
 
 df_ml = prepare_segmented_dataframe()
 
-df_ml['log_quantity'] = np.log1p(df_ml['quantity'])  # log(1 + quantity)
-
 print(df_ml.info())
 
-features = [ 'customer_segment','fidelity_segment','product_mean_quantity_log']
+features = [ 'unit_price', 'discount', 'customer_segment', 
+            'monthly_segment','product_segment','stock_reorder_interaction','category_sales']
 target = 'log_quantity'
 
 
