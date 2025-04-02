@@ -6,6 +6,7 @@ from sklearn.metrics import root_mean_squared_error,r2_score
 from sklearn.preprocessing import StandardScaler
 from sklearn.linear_model import LinearRegression
 from eda_utils import remove_outliers_iqr, apply_log_transform
+from sklearn.model_selection import cross_val_score
 
 
 # 1. Veriyi hazırla
@@ -47,10 +48,23 @@ y_pred_lr = model_lr.predict(X_test_scaled)
 r2_value_lr = r2_score(y_test, y_pred_lr)
 rmse_lr = np.sqrt(root_mean_squared_error(y_test, y_pred_lr))
 
-print(f"LINEER REGRESYON - RMSE: {rmse_lr:.2f}, R2: {r2_value_lr:.2f}")
-
-#Cross-Validation-Lineer Regression
-from sklearn.model_selection import cross_val_score
+# Cross-validation skorları (R²)
 cv_scores = cross_val_score(model_lr, X, y, cv=5, scoring='r2')
-print("CV R² scores:", cv_scores)
-print("Mean CV R²:", cv_scores.mean())
+
+# 1. Performans metrikleri (test seti ve CV ortalaması)
+summary_df = pd.DataFrame({
+    "Metric": ["RMSE (Test)", "R² (Test)", "Mean CV R²"],
+    "Score": [rmse_lr, r2_value_lr, cv_scores.mean()]
+})
+
+# 2. Cross-validation her fold skoru
+cv_details_df = pd.DataFrame({
+    "Fold": [f"Group {i+1}" for i in range(len(cv_scores))],
+    "R² Score": cv_scores
+})
+
+# Çıktı
+print("📊 Model Performans Özeti:")
+print(summary_df)
+print("\n🔁 Cross-Validation:")
+print(cv_details_df)

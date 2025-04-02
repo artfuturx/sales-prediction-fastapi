@@ -34,12 +34,17 @@ model.fit(X_scaled, y)
 
 # 8. Model ve scaler kaydet
 joblib.dump(model, "model.pkl")
-joblib.dump(scaler, "scaler.pkl")
 
 # 9. Tahmin icin gerekli feature vektoru olusturma fonksiyonu
 def build_feature_vector(df, product_id, customer_id, order_date, units_in_stock, reorder_level):
-    order_month = pd.to_datetime(order_date).month
+    # Tarihi esnek biçimde çevir
+    try:
+        parsed_date = pd.to_datetime(order_date, dayfirst=True, errors='coerce')
+        order_month = parsed_date.month if not pd.isna(parsed_date) else None
+    except:
+        order_month = None
 
+    # Segment ve diğer bilgileri çek, eğer veri yoksa default değeri kullan
     try:
         product_segment = df[df['product_id'] == product_id]['product_segment'].mode()[0]
     except IndexError:
@@ -51,8 +56,18 @@ def build_feature_vector(df, product_id, customer_id, order_date, units_in_stock
         customer_segment = 1
 
     try:
-        monthly_segment = df[df['order_month_num'] == order_month]['monthly_segment'].mode()[0]
-    except IndexError:
+        parsed_date = pd.to_datetime(order_date, dayfirst=True, errors='coerce')
+        order_month = parsed_date.month if not pd.isna(parsed_date) else None
+    except:
+        order_month = None
+
+    try:
+        if order_month is not None:
+            segment_mode = df[df['order_month_num'] == order_month]['monthly_segment'].mode()
+            monthly_segment = segment_mode.iloc[0] if not segment_mode.empty else 1
+        else:
+            monthly_segment = 1
+    except:
         monthly_segment = 1
 
     try:
@@ -78,8 +93,8 @@ def build_feature_vector(df, product_id, customer_id, order_date, units_in_stock
 
     return pd.DataFrame([features])
 
-# 10. Tahmin fonksiyonu
 
+# 10. Tahmin fonksiyonu
 def model_predict(product_id, customer_id, order_date, units_in_stock, reorder_level):
     input_df = build_feature_vector(df, product_id, customer_id, order_date, units_in_stock, reorder_level)
     input_scaled = scaler.transform(input_df)

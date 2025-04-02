@@ -6,6 +6,7 @@ from sklearn.metrics import root_mean_squared_error,r2_score
 from sklearn.preprocessing import StandardScaler
 from sklearn.ensemble import RandomForestRegressor
 from eda_utils import remove_outliers_iqr, apply_log_transform
+from sklearn.model_selection import cross_val_score
 
 
 # 1. Veriyi hazırla
@@ -42,11 +43,24 @@ model_rf.fit(X_train, y_train)
 y_pred_rf = model_rf.predict(X_test)
 r2_value_rf = r2_score(y_test,y_pred_rf)
 rmse_rf = root_mean_squared_error(y_test, y_pred_rf)
-print(f"RANDOM FOREST - Test RMSE: {rmse_rf:.2f}, Test R2: {r2_value_rf:.2f} ")
-
-
-#Cross-Validation-Random Forest
-from sklearn.model_selection import cross_val_score
+# Cross-validation skorları (R²)
 cv_scores = cross_val_score(model_rf, X, y, cv=5, scoring='r2')
-print("CV R² scores:", cv_scores)
-print("Mean CV R²:", cv_scores.mean())
+
+# 1. Performans metrikleri (test seti ve CV ortalaması)
+summary_df = pd.DataFrame({
+    "Metric": ["RMSE (Test)", "R² (Test)", "Mean CV R²"],
+    "Score": [rmse_rf, r2_value_rf, cv_scores.mean()]
+})
+
+# 2. Cross-validation her fold skoru
+cv_details_df = pd.DataFrame({
+    "Fold": [f"Group {i+1}" for i in range(len(cv_scores))],
+    "R² Score": cv_scores
+})
+
+# Çıktı
+print("📊 Model Performans Özeti:")
+print(summary_df)
+print("\n🔁 Cross-Validation:")
+print(cv_details_df)
+
