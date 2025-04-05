@@ -1,84 +1,58 @@
-#**FastAPI**  ile temel yapı kurulumu Aşağıdaki uç noktaların oluşturulması:
-#Endpoint	Method	Açıklama
-
-#/products	 GET	Ürün listesini döner
-
-#/predict	POST	Tahmin yapılmasını sağlar
-
-#/retrain	            POST	Modeli yeniden eğitir (opsiyonel)
-
-#/sales_summary	GET 	Satış özet verisini döner
-
-#predict uç noktası:
-
-#Kullanıcıdan ürün, tarih ve müşteri bilgilerini alır
-
-#Modeli yükler ve tahmini yapar
-
-#Tahmini sonuç olarak döner
-
-#Swagger dokümantasyonun kontrolü
-
-
-from fastapi import FastAPI, HTTPException, Body
+from fastapi import FastAPI
 from pydantic import BaseModel
 import pandas as pd
 import joblib
+import psycopg2
+from database_definition import prepare_segmented_dataframe
 from database_connect import get_data_from_db
-import numpy as np
+from main_model import build_feature_vector, model_predict, train_and_save_model
+
+# Başlangıçta verileri hazırla
+df = prepare_segmented_dataframe()
+orders_df, order_details_df, products_df, customers_df, categories_df = get_data_from_db()
+
+app = FastAPI(
+    title="Sales Predict API",
+    description="Northwind DB satış miktarı tahmin servisi"
+)
+
+# /products endpoint
+@app.get("/products")
+def get_products():
+    return products_df.to_dict(orient="records")
+
+# /sales_summary endpoint
+@app.get("/sales_summary")
+def sales_summary():
+    summary = df.groupby('product_id')['quantity'].sum().reset_index()
+    summary = summary.rename(columns={'quantity': 'total_quantity'})
+    return summary.to_dict(orient="records")
+
+# Tahmin için istek modeli
+class PredictRequest(BaseModel):
+    product_id: int
+    customer_id: str
+    order_date: str
+
+# /predict endpoint
+@app.post("/predict")
+def predict(request: PredictRequest):
+    prediction = model_predict(
+        df=df,
+        product_id=request.product_id,
+        customer_id=request.customer_id,
+        order_date=request.order_date
+    )
+    return {"prediction": prediction}
+
+# /retrain endpoint
+@app.post("/retrain")
+def retrain():
+    df = prepare_segmented_dataframe()
+    train_and_save_model(df)
+    return {"message": "Model başarıyla tekrar eğitildi."}
 
 
-app = FastAPI(title="Price Predict Api", 
-              description="Northwind DB price predict Api's")
-
-
-
-
-
-
-
-
-
-
-"""
-
-joblib.dump(model, "credit_model.pkl")
-
-# 🚀 FastAPI uygulaması
-app = FastAPI(title="Credit Approveal API", description="credit approval")
-
-# 📦 Giriş verisi için Pydantic modeli
-class Applicant(BaseModel):
-    age: int
-    income: float  # int de olabilir
-    credit_score: int
-    has_default: int
-
-# 🔮 Tahmin endpoint'i (tek dekoratör!)
-@app.post("/predict", tags=["prediction"])
-def predict_approval(applicant: Applicant):
-    data_model = joblib.load("credit_model.pkl")
-    input_data = [[
-        applicant.age,
-        applicant.income,
-        applicant.credit_score,
-        applicant.has_default
-    ]]
-    prediction = data_model.predict(input_data)[0]
-    result = "Approved" if prediction == 1 else "Rejected"
-
-    return {
-        "prediction": result,
-        "details": {
-            "age": applicant.age,
-            "income": applicant.income,
-            "credit_score": applicant.credit_score,
-            "has_default": applicant.has_default
-        }
-    }
-
-# 🧠 AR-GE Ödevleri
-# Ödev 1 - ARGE : DecisionTrees'de gini yerine alternatif ne kullanılabilir? Farkı nedir?
-# Ödev 2 - ARGE : Pydantic ile başka neler yapılabilir? 
-# Ödev 3 - ARGE : Faker kütüphanesi ne işe yarar? Detaylı araştırınız."
-"""
+#python -m uvicorn fast_api:app --reload
+#http://localhost:8000/docs
+#http://localhost:8000/redoc

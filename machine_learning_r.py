@@ -12,18 +12,19 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 
 
-
 df_ml = prepare_segmented_dataframe()
 
 print(df_ml.info())
 
-features = [ 'unit_price', 'discount', 'customer_segment', 
-            'monthly_segment','product_segment','stock_reorder_interaction','category_sales']
-target = 'log_quantity'
+# Özellik ve hedef
+feature_cols = [
+    'monthly_segment','product_segment','product_mean_spent',
+    'stock_reorder_interaction','category_rank', 'has_discount'
+]
 
+X = df_ml[feature_cols].copy()
+y = df_ml['total_spent']
 
-X = df_ml[features]
-y = df_ml[target]
 
 # Veriyi böl
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
@@ -52,7 +53,8 @@ print(f"DESICION TREE - Test RMSE: {rmse_dt:.2f}, Test R2: {r2_value_dt:.2f} ")
 # Ölçekleme işlemi
 scaler = StandardScaler()
 X_scaled = scaler.fit_transform(X)
-X_train_scaled, X_test_scaled, y_train, y_test = train_test_split(X_scaled, y, test_size=0.2, random_state=42)
+X_train_scaled, X_test_scaled, y_train, y_test = train_test_split(X_scaled, y,
+                                                                  test_size=0.2, random_state=42)
 
 # Model oluştur ve eğit
 model_lr = LinearRegression()
@@ -71,10 +73,10 @@ cv_scores = cross_val_score(model_lr, X, y, cv=5, scoring='r2')
 print("CV R² scores:", cv_scores)
 print("Mean CV R²:", cv_scores.mean())
 
-print(df_ml['quantity'].describe())
+print(df_ml['total_spent'].describe())
 
 corr_matrix = df_ml.corr(numeric_only=True)
-print(corr_matrix['quantity'].sort_values(ascending=False))
+print(corr_matrix['total_spent'].sort_values(ascending=False))
 
 
 #- Hedef değişken belirleme (örnek:ürün bazlı satış miktarı)

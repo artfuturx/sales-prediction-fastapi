@@ -9,29 +9,18 @@ from eda_utils import remove_outliers_iqr, apply_log_transform
 from sklearn.model_selection import cross_val_score
 
 
-# 1. Veriyi hazırla
+# Verinin Hazırlanması
 df = prepare_segmented_dataframe()
-
-# 2. Aykırı değerleri çıkar 
-# df = remove_outliers_iqr(df, 'quantity')
-# aykiri degerleri cikardiktan sonra skor dusuyor.
-
-# 3. Log dönüşüm
-df = apply_log_transform(df, 'quantity', 'quantity_log')
-
-corr_matrix = df.corr(numeric_only=True)
-print(corr_matrix['quantity'].sort_values(ascending=False))
-
 
 # Özellik ve hedef
 feature_cols = [
-    'unit_price', 'discount', 'customer_segment', 
-    'monthly_segment','product_segment',
-    'stock_reorder_interaction'
+    'monthly_segment','product_segment','product_mean_spent',
+    'stock_reorder_interaction','category_rank', 'has_discount'
 ]
 
 X = df[feature_cols].copy()
-y = df['quantity_log']
+y = df['total_spent']
+
 
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
 
@@ -42,9 +31,23 @@ model_rf.fit(X_train, y_train)
 # Tahmin ve performans
 y_pred_rf = model_rf.predict(X_test)
 r2_value_rf = r2_score(y_test,y_pred_rf)
+#y_test_original = np.expm1(y_test)
+#y_pred_original = np.expm1(y_pred_rf)
 rmse_rf = root_mean_squared_error(y_test, y_pred_rf)
+
 # Cross-validation skorları (R²)
 cv_scores = cross_val_score(model_rf, X, y, cv=5, scoring='r2')
+
+
+# DataFrame oluştur
+comparison_df = pd.DataFrame({
+    'Gerçek Değer': y_test,
+    'Tahmin Değeri': y_pred_rf
+})
+print(' ')
+# İlk 10 satırı göster
+print(comparison_df.head(10))
+print(' ')
 
 # 1. Performans metrikleri (test seti ve CV ortalaması)
 summary_df = pd.DataFrame({
