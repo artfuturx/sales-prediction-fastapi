@@ -18,10 +18,9 @@ print(df_ml.info())
 
 # Özellik ve hedef
 feature_cols = [
-    'monthly_segment','product_segment','product_mean_spent',
+    'monthly_segment','product_segment','product_mean_spent', 'customer_segment',
     'stock_reorder_interaction','category_rank', 'has_discount'
 ]
-
 X = df_ml[feature_cols].copy()
 y = df_ml['total_spent']
 

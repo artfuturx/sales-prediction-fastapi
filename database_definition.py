@@ -12,7 +12,6 @@ def prepare_segmented_dataframe():
         .merge(products_df[["product_id", "category_id",'units_in_stock','reorder_level']],
                on="product_id", how="left")
     )
-
     #toplam harcama sutunu
     df_final['total_spent'] = df_final['unit_price'] * df_final['quantity'] * (1 - df_final['discount'])
 

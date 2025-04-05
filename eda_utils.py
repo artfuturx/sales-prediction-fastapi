@@ -38,6 +38,7 @@ if __name__ == "__main__":
     df = apply_log_transform(df, 'quantity', 'quantity_log')
     df = apply_log_transform(df, 'total_spent', 'total_spent_log')
 
+    #df = remove_outliers_iqr(df,'total_spent')
 
     # Orijinal ve Log-total Spent dağılımı
     fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(14, 5))
@@ -75,9 +76,9 @@ if __name__ == "__main__":
 
     #Aykiri degerlerin gostrilmesi
     plt.figure(figsize=(8, 5))
-    sns.boxplot(x=df['total_spent_log'], color="orange")
-    plt.title("total_spent_log - Aykırı Değerleri Gösteren Boxplot")
-    plt.xlabel("total_spent_log")
+    sns.boxplot(x=df['total_spent'], color="orange")
+    plt.title("total_spent - Aykırı Değerleri Gösteren Boxplot")
+    plt.xlabel("total_spent")
     plt.tight_layout()
     plt.show()
 
@@ -87,7 +88,7 @@ if __name__ == "__main__":
     df['month'] = df['order_date'].dt.to_period('M')
 
     # Aylık satış özeti:
-    monthly_sales = df.groupby('month')['total_spent'].sum().reset_index()
+    monthly_sales = df.groupby('month')[['quantity','total_spent']].sum().reset_index()
 
     # Ürün bazlı satış:
     product_sales = df.groupby('product_id')[['quantity','total_spent']].sum().reset_index()
@@ -116,5 +117,5 @@ if __name__ == "__main__":
     print(" ")
     print("TOTAL SPENT İLE DİĞER KOLONLARIN İLİŞKİSİ (KORELASYON) :")
     corr_matrix = df.corr(numeric_only=True)
-    print(corr_matrix['quantity'].sort_values(ascending=False))
+    print(corr_matrix['total_spent'].sort_values(ascending=False))
 

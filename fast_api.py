@@ -37,12 +37,16 @@ class PredictRequest(BaseModel):
 # /predict endpoint
 @app.post("/predict")
 def predict(request: PredictRequest):
-    prediction = model_predict(
-        df=df,
-        product_id=request.product_id,
-        customer_id=request.customer_id,
-        order_date=request.order_date
-    )
+    if request.product_id not in df['product_id'].values:
+        return {"error": f"Geçersiz ürün ID: {request.product_id}"}
+    if request.customer_id not in df['customer_id'].values:
+        return {"error": f"Geçersiz müşteri ID: {request.customer_id}"}
+    try:
+        pd.to_datetime(request.order_date, dayfirst=True)
+    except:
+        return {"error": "Geçersiz tarih formatı. Lütfen GG/AA/YYYY formatında girin."}
+
+    prediction = model_predict(...)
     return {"prediction": prediction}
 
 # /retrain endpoint

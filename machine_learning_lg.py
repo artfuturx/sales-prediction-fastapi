@@ -14,7 +14,7 @@ df = prepare_segmented_dataframe()
 
 # Özellik ve hedef
 feature_cols = [
-    'monthly_segment','product_segment','product_mean_spent',
+    'monthly_segment','product_segment','product_mean_spent', 'customer_segment',
     'stock_reorder_interaction','category_rank', 'has_discount'
 ]
 
@@ -35,10 +35,8 @@ model_lr.fit(X_train_scaled, y_train)
 # Tahmin ve performans
 y_pred_lr = model_lr.predict(X_test_scaled)
 r2_value_lr = r2_score(y_test, y_pred_lr)
-#y_test_original = np.expm1(y_test)
-#y_pred_original = np.expm1(y_pred_lr)
-
 rmse_lr = root_mean_squared_error(y_test, y_pred_lr)
+
 # Cross-validation skorları (R²)
 cv_scores = cross_val_score(model_lr, X, y, cv=5, scoring='r2')
 

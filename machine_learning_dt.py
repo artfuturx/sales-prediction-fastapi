@@ -14,7 +14,7 @@ df = prepare_segmented_dataframe()
 
 # Özellik ve hedef
 feature_cols = [
-    'monthly_segment','product_segment','product_mean_spent',
+    'monthly_segment','product_segment','product_mean_spent', 'customer_segment',
     'stock_reorder_interaction','category_rank', 'has_discount'
 ]
 

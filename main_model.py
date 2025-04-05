@@ -12,8 +12,8 @@ from eda_utils import apply_log_transform
 # Model eğitimi ve kaydı
 def train_and_save_model(df, model_path="model.pkl"):
     feature_cols = [
-        'monthly_segment', 'product_segment', 'product_mean_spent',
-        'stock_reorder_interaction', 'category_rank', 'has_discount'
+    'monthly_segment','product_segment','product_mean_spent', 'customer_segment',
+    'stock_reorder_interaction','category_rank', 'has_discount'
     ]
     X = df[feature_cols]
     y = df['total_spent']
@@ -91,6 +91,7 @@ def build_feature_vector(df, product_id, customer_id, order_date):
         'monthly_segment': monthly_segment,
         'product_segment': product_segment,
         'product_mean_spent': product_mean_spent,
+        'customer_segment' : customer_segment,
         'stock_reorder_interaction': stock_reorder_interaction,
         'category_rank': category_rank,
         'has_discount': has_discount
@@ -104,11 +105,10 @@ def model_predict(df, product_id, customer_id, order_date):
     input_df = build_feature_vector(df, product_id, customer_id, order_date)
     scaler = joblib.load("scaler.pkl")
     model = joblib.load("model.pkl")
-
     input_scaled = scaler.transform(input_df)
     prediction = model.predict(input_scaled)
 
-    return int(round(prediction[0]))
+    return prediction
 
 
 # Ana çalışma bloğu
@@ -120,8 +120,8 @@ if __name__ == "__main__":
     model, scaler = train_and_save_model(df)
 
     # Örnek tahmin
-    example_product = df['product_id'].iloc[0]
-    example_customer = df['customer_id'].iloc[0]
+    example_product = 8
+    example_customer = 'ALFKI'
     example_date = '15/03/1997'
 
     prediction = model_predict(df, example_product, example_customer, example_date)
