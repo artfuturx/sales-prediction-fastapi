@@ -1,7 +1,8 @@
+import os
 import pandas as pd
 from sqlalchemy import create_engine
 
-DATABASE_URL = "postgresql://postgres:12345@localhost:5432/gyk1"
+DATABASE_URL = os.getenv("DATABASE_URL", "postgresql://postgres:12345@localhost:5432/Gyk1Northwind")
 
 engine = create_engine(DATABASE_URL)
 
@@ -22,6 +23,7 @@ def get_data_from_db():
 
 if __name__ == "__main__":
     get_data_from_db()
+
 
 
 

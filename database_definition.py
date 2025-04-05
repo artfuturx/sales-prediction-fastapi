@@ -75,6 +75,5 @@ def prepare_segmented_dataframe():
     )
 
     df_final['has_discount'] = df_final['discount'].apply(lambda x: 1 if x > 0 else 0)
-
         
     return df_final
