@@ -24,8 +24,9 @@ def get_products():
 # /sales_summary endpoint
 @app.get("/sales_summary")
 def sales_summary():
-    summary = df.groupby('product_id')['quantity'].sum().reset_index()
-    summary = summary.rename(columns={'quantity': 'total_quantity'})
+    df["total"] = df["quantity"] * df["unit_price"] * (1 - df["discount"])
+    summary = df.groupby("product_id")["total"].sum().reset_index()
+    summary = summary.rename(columns={"total": "total_spent"})
     return summary.to_dict(orient="records")
 
 # Tahmin için istek modeli
